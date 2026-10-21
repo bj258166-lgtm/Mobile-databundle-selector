@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Data Bundle Selector</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+    <h1>Mobile Data Bundle Selector</h1>
+    <p class="muted">Choose one or more bundles and enter your budget to see your total.</p>
+
+    <form id="bundle-form" class="panel">
+        <h2>Available bundles</h2>
+        <div class="bundle">
+            <label for="bundle-daily">
+                <input type="checkbox" id="bundle-daily" name="bundles" value="Daily" checked>
+                <span class="bundle-details">
+                    <strong>Daily</strong>
+                    <span class="muted">1 GB</span>
+                </span>
+            </label>
+            <span class="bundle-price">
+                <strong>UGX 2,000</strong>
+                <span class="muted">per bundle</span>
+            </span>
+        </div>
+        <div class="bundle">
+            <label for="bundle-weekly">
+                <input type="checkbox" id="bundle-weekly" name="bundles" value="Weekly">
+                <span class="bundle-details">
+                    <strong>Weekly</strong>
+                    <span class="muted">5 GB</span>
+                </span>
+            </label>
+            <span class="bundle-price">
+                <strong>UGX 10,000</strong>
+                <span class="muted">per bundle</span>
+            </span>
+        </div>
+        <div class="bundle">
+            <label for="bundle-monthly">
+                <input type="checkbox" id="bundle-monthly" name="bundles" value="Monthly" checked>
+                <span class="bundle-details">
+                    <strong>Monthly</strong>
+                    <span class="muted">20 GB</span>
+                </span>
+            </label>
+            <span class="bundle-price">
+                <strong>UGX 35,000</strong>
+                <span class="muted">per bundle</span>
+            </span>
+        </div>
+        <div class="bundle">
+            <label for="bundle-heavy-user">
+                <input type="checkbox" id="bundle-heavy-user" name="bundles" value="Heavy User">
+                <span class="bundle-details">
+                    <strong>Heavy User</strong>
+                    <span class="muted">50 GB</span>
+                </span>
+            </label>
+            <span class="bundle-price">
+                <strong>UGX 70,000</strong>
+                <span class="muted">per bundle</span>
+            </span>
+        </div>
+
+        <label class="budget-field" for="budget">
+            <strong>Your budget (UGX)</strong>
+            <input type="number" id="budget" name="budget" min="0" step="1" value="40000" required>
+        </label>
+
+        <button type="submit">Calculate my bundles</button>
+    </form>
+
+    <section class="panel" aria-live="polite">
+        <h2>Your selection summary</h2>
+        <p id="error-message" class="error" hidden></p>
+        <ul id="summary-list" class="summary-list"></ul>
+        <p id="empty-selection" hidden>No bundles selected.</p>
+
+        <dl class="totals">
+            <div>
+                <dt>Total data allowance</dt>
+                <dd><strong id="total-data">21 GB</strong></dd>
+            </div>
+            <div>
+                <dt>Total cost</dt>
+                <dd><strong id="total-cost">UGX 37,000</strong></dd>
+            </div>
+            <div>
+                <dt>Your budget</dt>
+                <dd><strong id="budget-total">UGX 40,000</strong></dd>
+            </div>
+        </dl>
+        <p id="budget-status" class="status sufficient">
+            Your budget is enough. Remaining budget: UGX 3,000.
+        </p>
+    </section>
+</main>
+
+<footer class="group-footer">
+    <h2>Group 5</h2>
+    <ol class="member-grid">
+        <li><strong>NUWASIIMA LIBBY</strong><span>252-571 · BSE</span></li>
+        <li><strong>WOGUNYA EMMANUEL</strong><span>252-620 · BSE</span></li>
+        <li><strong>ANINGA SARAH</strong><span>258-961 · BSE</span></li>
+        <li><strong>KISAKYE MERCY NABUDUWA</strong><span>259-572 · BSE</span></li>
+        <li><strong>MUZUNI JOHN</strong><span>241-482 · BSE</span></li>
+        <li><strong>MATOVU Afford</strong><span>277-383 · BCS</span></li>
+        <li><strong>MANGAR BOL MAKUEI</strong><span>237-273 · BIT</span></li>
+        <li><strong>SEKANJAKO EZRA</strong><span>268-823 · BIT</span></li>
+        <li><strong>KYIBUYE RONALD</strong><span>275-371 · BIT</span></li>
+        <li><strong>BAINGANA Julius</strong><span>253-166 · BSE</span></li>
+        <li><strong>MASSOUD MAHAMAT</strong><span>277-251 · BCS</span></li>
+        <li><strong>MUTIBUWA Tracy Vivian</strong><span>213-849 · BIT</span></li>
+        <li><strong>Biyinzika Daniel</strong><span>269-594 · BCS</span></li>
+        <li><strong>PETER OBURAH MATHEW</strong><span>276-985 · BIT</span></li>
+        <li><strong>BEINGANA DANIEL</strong><span>275-316 · BIT</span></li>
+    </ol>
+</footer>
+
+<script>
+    const bundles = {
+        Daily: { data: 1, price: 2000 },
+        Weekly: { data: 5, price: 10000 },
+        Monthly: { data: 20, price: 35000 },
+        "Heavy User": { data: 50, price: 70000 }
+    };
+    const currency = new Intl.NumberFormat("en-US");
+    const form = document.querySelector("#bundle-form");
+    const summaryList = document.querySelector("#summary-list");
+    const emptySelection = document.querySelector("#empty-selection");
+    const errorMessage = document.querySelector("#error-message");
+    const totalData = document.querySelector("#total-data");
+    const totalCost = document.querySelector("#total-cost");
+    const budgetTotal = document.querySelector("#budget-total");
+    const budgetStatus = document.querySelector("#budget-status");
+
+    form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        errorMessage.hidden = true;
+        budgetStatus.hidden = false;
+
+        const budgetInput = document.querySelector("#budget").value.trim();
+        if (!/^\d+$/.test(budgetInput) || !Number.isSafeInteger(Number(budgetInput))) {
+            errorMessage.textContent = "Enter a valid budget of 0 or more UGX.";
+            errorMessage.hidden = false;
+            budgetTotal.textContent = "Not valid";
+            budgetStatus.hidden = true;
+            return;
+        }
+
+        const budget = Number(budgetInput);
+        const selected = Array.from(form.querySelectorAll('input[name="bundles"]:checked'))
+            .map((checkbox) => checkbox.value)
+            .filter((name) => Object.hasOwn(bundles, name));
+        const cost = selected.reduce((sum, name) => sum + bundles[name].price, 0);
+        const data = selected.reduce((sum, name) => sum + bundles[name].data, 0);
+
+        summaryList.replaceChildren();
+        selected.forEach((name) => {
+            const item = document.createElement("li");
+            const label = document.createElement("strong");
+            label.textContent = name;
+            item.append(label, ` — ${bundles[name].data} GB, UGX ${currency.format(bundles[name].price)}`);
+            summaryList.append(item);
+        });
+        emptySelection.hidden = selected.length !== 0;
+        totalData.textContent = `${currency.format(data)} GB`;
+        totalCost.textContent = `UGX ${currency.format(cost)}`;
+        budgetTotal.textContent = `UGX ${currency.format(budget)}`;
+
+        const sufficient = cost <= budget;
+        const difference = sufficient ? budget - cost : cost - budget;
+        budgetStatus.className = `status ${sufficient ? "sufficient" : "insufficient"}`;
+        budgetStatus.textContent = sufficient
+            ? `Your budget is enough. Remaining budget: UGX ${currency.format(difference)}.`
+            : `Your budget is not enough. You are over budget by: UGX ${currency.format(difference)}.`;
+    });
+</script>
+</body>
+</html>
